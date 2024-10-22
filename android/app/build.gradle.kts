@@ -69,5 +69,8 @@ dependencies {
     // navcontroller
     implementation("androidx.navigation:navigation-compose:2.8.2")
     implementation("androidx.navigation:navigation-runtime-ktx:2.8.2")
-
+    // Kotlin serialization
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.5.1")
+    // Coil
+    implementation("io.coil-kt:coil-compose:2.4.0")
 }
