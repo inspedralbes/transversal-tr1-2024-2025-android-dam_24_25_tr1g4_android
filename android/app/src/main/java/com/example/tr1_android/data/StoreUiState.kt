@@ -7,6 +7,7 @@ data class StoreUiState (
     var shopItems: List<ShopItem> = emptyList(),
     var isLoading: Boolean = true,
     var token: String = "",
+    var trolley: List<ShopItem> = emptyList(),
 )
 
 @Serializable

@@ -12,6 +12,10 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.tr1_android.ui.ShopScreen
+import com.example.tr1_android.ui.StoreViewModel
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.tr1_android.ui.OrderScreen
+import com.example.tr1_android.ui.PaymentScreen
 import com.example.tr1_android.ui.theme.TR1_androidTheme
 
 enum class StoreScreen {
@@ -24,7 +28,7 @@ enum class StoreScreen {
 
 @Composable
 fun TR1_androidApp(
-//    viewModel: GameViewModel = viewModel(),
+    viewModel: StoreViewModel = viewModel(),
     navController: NavHostController = rememberNavController()
 ) {
     Scaffold(
@@ -39,7 +43,29 @@ fun TR1_androidApp(
             composable(route = StoreScreen.Shop.name) {
                 ShopScreen(
                     modifier = Modifier
-                        .padding(innerPadding)
+                        .padding(innerPadding),
+                    comprarItem = {
+                        viewModel.addItemToTrolley(it)
+                        navController.navigate(StoreScreen.Payment.name)
+                    },
+                    viewModel = viewModel
+                )
+            }
+            composable(route = StoreScreen.Payment.name) {
+                PaymentScreen(
+                    modifier = Modifier
+                        .padding(innerPadding),
+                    viewModel = viewModel,
+                    onPaymentSuccess = {
+                        navController.navigate(StoreScreen.Order.name)
+                    }
+                )
+            }
+            composable(route = StoreScreen.Order.name) {
+                OrderScreen(
+                    modifier = Modifier
+                        .padding(innerPadding),
+                    viewModel = viewModel,
                 )
             }
         }
