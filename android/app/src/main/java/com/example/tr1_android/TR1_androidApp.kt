@@ -48,7 +48,7 @@ fun TR1_androidApp(
                         viewModel.addItemToTrolley(it)
                         navController.navigate(StoreScreen.Payment.name)
                     },
-                    viewModel = viewModel
+                    storeViewModel = viewModel
                 )
             }
             composable(route = StoreScreen.Payment.name) {

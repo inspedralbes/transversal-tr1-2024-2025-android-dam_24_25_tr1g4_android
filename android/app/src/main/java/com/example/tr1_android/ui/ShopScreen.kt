@@ -16,32 +16,35 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
-import coil.compose.rememberAsyncImagePainter
-import coil.compose.rememberImagePainter
 import coil.request.ImageRequest
 import com.example.tr1_android.data.ShopItem
 
 @Composable
 fun ShopScreen(
+    storeViewModel: StoreViewModel = viewModel(),
     modifier: Modifier = Modifier,
-    comprarItem: (ShopItem) -> Unit = {},
-    viewModel: StoreViewModel
+    comprarItem: (ShopItem) -> Unit = {}
 ) {
-    var exampleData: List<ShopItem> = listOf(
+    val storeUiState by storeViewModel.uiState.collectAsState()
+
+   /* var exampleData: List<ShopItem> = listOf(
         ShopItem(0, "Apple", "https://example.com/apple.jpg", 10, 1.99),
         ShopItem(1, "Pear", "https://example.com/apple.jpg", 10, 2.99),
         ShopItem(2, "Orange", "https://example.com/apple.jpg", 10, 3.99),
         ShopItem(3, "Banana", "https://example.com/apple.jpg", 10, 4.99),
         ShopItem(4, "Lime", "https://example.com/apple.jpg", 10, 5.99),
         ShopItem(5, "Mango", "https://example.com/apple.jpg", 10, 6.99),
-    )
+    )*/
     Box(
         modifier = modifier
             .fillMaxSize()
@@ -52,7 +55,7 @@ fun ShopScreen(
             ),
     ){
         Column {
-            exampleData.forEach {
+            storeUiState.shopItems.forEach {
                 ShopItemCard(shopItem = it, comprarItem = comprarItem)
             }
         }
