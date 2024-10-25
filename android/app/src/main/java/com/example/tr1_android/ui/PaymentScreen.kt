@@ -34,12 +34,12 @@ fun PaymentScreen(
         .fillMaxSize()
         .padding(16.dp)) {
         LazyColumn(modifier = Modifier.weight(1f)) {
-            items(shopUiState.trolley) { shopItem ->
-                ShopItemRow(shopItem)
+            items(shopUiState.trolley.filter { it.quantity > 0 }) { trolleyItem ->
+                ShopItemRow(trolleyItem.item, trolleyItem.quantity)
             }
         }
 
-        Text(text = "Total: $${2}",
+        Text(text = "Total: $${shopUiState.totalPrice}",
             style = MaterialTheme.typography.headlineMedium,
             modifier = Modifier.padding(bottom = 16.dp))
 
@@ -50,11 +50,14 @@ fun PaymentScreen(
 }
 
 @Composable
-fun ShopItemRow(shopItem: ShopItem) {
+fun ShopItemRow(
+    shopItem: ShopItem,
+    quantity: Int
+) {
     Row(modifier = Modifier
         .fillMaxWidth()
         .padding(8.dp)) {
         Text(text = shopItem.nom, modifier = Modifier.weight(1f))
-        Text(text = "${shopItem.estoc} x $${shopItem.preu}")
+        Text(text = "${quantity} x $${shopItem.preu}")
     }
 }

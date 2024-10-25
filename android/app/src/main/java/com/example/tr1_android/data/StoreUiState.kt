@@ -7,7 +7,8 @@ data class StoreUiState (
     var shopItems: List<ShopItem> = emptyList(),
     var isLoading: Boolean = true,
     var token: String = "",
-    var trolley: List<ShopItem> = emptyList(),
+    var trolley: List<TrolleyItem> = emptyList(),
+    val totalPrice: Double = 0.0
 )
 
 @Serializable
@@ -27,4 +28,9 @@ data class ShopItem(
 
     @SerialName (value = "preu")
     var preu: Double,
+)
+
+data class TrolleyItem(
+    val item: ShopItem,
+    val quantity: Int
 )
