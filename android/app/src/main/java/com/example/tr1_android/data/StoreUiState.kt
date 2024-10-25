@@ -8,7 +8,8 @@ data class StoreUiState (
     var isLoading: Boolean = true,
     var token: String = "",
     var trolley: List<TrolleyItem> = emptyList(),
-    val totalPrice: Double = 0.0
+    val totalPrice: Double = 0.0,
+    var userInfo: User = User()
 )
 
 @Serializable
@@ -33,4 +34,27 @@ data class ShopItem(
 data class TrolleyItem(
     val item: ShopItem,
     val quantity: Int
+)
+
+data class User(
+    var idUser: Int = 1,
+    var nom: String = "",
+    var correu: String = "",
+    var token: String = "",
+)
+
+data class BuyItem(
+    var idProducte: Int,
+    var quantitat: Int
+    )
+
+data class CompraRequest(
+    var idUsuari: Int,
+    var productes: List<BuyItem>,
+    var preuTotal: Double
+)
+
+data class LoginRequest(
+    var correu: String,
+    var contrasenya: String
 )

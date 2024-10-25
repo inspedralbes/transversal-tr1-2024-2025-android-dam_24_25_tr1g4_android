@@ -122,6 +122,8 @@ fun TR1_androidApp(
                         .padding(innerPadding),
                     viewModel = viewModel,
                     onPaymentSuccess = {
+                        viewModel.postCompra()
+                        viewModel.clearTrolley()
                         navController.navigate(StoreScreen.Order.name)
                     }
                 )
