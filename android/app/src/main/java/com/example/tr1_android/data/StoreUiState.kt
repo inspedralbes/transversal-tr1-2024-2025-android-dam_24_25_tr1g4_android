@@ -36,17 +36,39 @@ data class TrolleyItem(
     val quantity: Int
 )
 
+@Serializable
 data class User(
-    var idUser: Int = 1,
+    var id: Int = 1,
     var nom: String = "",
-    var correu: String = "",
+    var email: String = "",
     var token: String = "",
 )
+
+sealed interface UserUiState {
+    data class Success(val user: User) : UserUiState
+    object Error : UserUiState
+    object Loading : UserUiState
+}
+
+// Login
+
+data class LoginRequest(
+    var correu: String,
+    var contrasenya: String
+)
+
+@Serializable
+data class LoginResponse(
+    var valid: Boolean,
+    var usuari: User
+)
+
+// Compra
 
 data class BuyItem(
     var idProducte: Int,
     var quantitat: Int
-    )
+)
 
 data class CompraRequest(
     var idUsuari: Int,
@@ -54,7 +76,16 @@ data class CompraRequest(
     var preuTotal: Double
 )
 
-data class LoginRequest(
-    var correu: String,
-    var contrasenya: String
+@Serializable
+data class CompraResponse(
+    var valid: Boolean,
+    var comanda: Comanda
+)
+
+@Serializable
+data class Comanda(
+    var id: Int,
+    var estatus: String,
+    var productes: List<BuyItem>,
+    var total: Double
 )

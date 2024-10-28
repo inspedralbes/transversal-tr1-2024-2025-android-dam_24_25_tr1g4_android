@@ -19,6 +19,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -27,9 +28,11 @@ import com.example.tr1_android.ui.ShopScreen
 import com.example.tr1_android.ui.StoreViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.currentBackStackEntryAsState
+import com.example.tr1_android.ui.LoginScreen
 import com.example.tr1_android.ui.OrderScreen
 import com.example.tr1_android.ui.PaymentScreen
 import com.example.tr1_android.ui.theme.TR1_androidTheme
+import kotlinx.coroutines.launch
 
 enum class StoreScreen {
     Login,
@@ -65,11 +68,13 @@ fun StoreAppBar(
             }
         },
         actions = { // Add actions section
-            IconButton(onClick = { onTolleyClick() }) {
-                Icon(
-                    painter = painterResource(id = R.drawable.baseline_shopping_cart_24), // Replace with your trolley icon
-                    contentDescription = "Trolley"
-                )
+            if (canNavigateBack) {
+                IconButton(onClick = { onTolleyClick() }) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.baseline_shopping_cart_24), // Replace with your trolley icon
+                        contentDescription = "Trolley"
+                    )
+                }
             }
         }
     )
@@ -103,15 +108,35 @@ fun TR1_androidApp(
 
         NavHost(
             navController = navController,
-            startDestination = StoreScreen.Shop.name,
+            startDestination = StoreScreen.Login.name,
             modifier = Modifier.padding(innerPadding)
         ) {
-            composable(route = StoreScreen.Shop.name) {
-                ShopScreen(
+            composable(route = StoreScreen.Login.name) {
+                LoginScreen(
                     modifier = Modifier
                         .padding(innerPadding),
+                    onSendLogin = {
+                        var valid = false
+                        viewModel.viewModelScope.launch {
+                            valid = viewModel.login(it)
+                            if (valid) {
+                                navController.navigate(StoreScreen.Shop.name)
+                                println("acceptat")
+                            }
+                        }
+
+
+                    }
+                )
+            }
+            composable(route = StoreScreen.Shop.name) {
+                ShopScreen(
+                    modifier = Modifier,
                     afegirACarro = {
                         viewModel.addItemToTrolley(it)
+                    },
+                    treureDelCarro = {
+                        viewModel.removeItemFromTrolley(it)
                     },
                     storeViewModel = viewModel
                 )
@@ -122,9 +147,20 @@ fun TR1_androidApp(
                         .padding(innerPadding),
                     viewModel = viewModel,
                     onPaymentSuccess = {
-                        viewModel.postCompra()
-                        viewModel.clearTrolley()
-                        navController.navigate(StoreScreen.Order.name)
+                        var anyBought = false
+                        viewModel.uiState.value.trolley.forEach { trolleyItem ->
+                            if (trolleyItem.quantity > 0) {
+                                anyBought = true
+                            }
+                        }
+                        if (!anyBought) {
+                            navController.navigate(StoreScreen.Shop.name)
+                        } else {
+                            viewModel.postCompra()
+                            viewModel.clearTrolley()
+                            navController.navigate(StoreScreen.Order.name)
+                        }
+
                     }
                 )
             }
@@ -139,3 +175,10 @@ fun TR1_androidApp(
     }
 }
 
+@Preview
+@Composable
+fun TR1_androidAppPreview() {
+    TR1_androidTheme {
+        TR1_androidApp()
+    }
+}

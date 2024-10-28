@@ -5,6 +5,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -12,6 +13,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.Text
@@ -23,43 +26,45 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.semantics.error
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
+import coil.compose.rememberAsyncImagePainter
 import coil.request.ImageRequest
 import com.example.tr1_android.communication.DEV_URL
 import com.example.tr1_android.data.ShopItem
+import coil.request.CachePolicy
+import com.example.tr1_android.R
 
 @Composable
 fun ShopScreen(
     storeViewModel: StoreViewModel = viewModel(),
     modifier: Modifier = Modifier,
-    afegirACarro: (ShopItem) -> Unit = {}
+    afegirACarro: (ShopItem) -> Unit = {},
+    treureDelCarro: (ShopItem) -> Unit = {},
 ) {
     val storeUiState by storeViewModel.uiState.collectAsState()
-
     var imgBaseURL = "${DEV_URL}/assets"
-   /* var exampleData: List<ShopItem> = listOf(
-        ShopItem(0, "Apple", "https://example.com/apple.jpg", 10, 1.99),
-        ShopItem(1, "Pear", "https://example.com/apple.jpg", 10, 2.99),
-        ShopItem(2, "Orange", "https://example.com/apple.jpg", 10, 3.99),
-        ShopItem(3, "Banana", "https://example.com/apple.jpg", 10, 4.99),
-        ShopItem(4, "Lime", "https://example.com/apple.jpg", 10, 5.99),
-        ShopItem(5, "Mango", "https://example.com/apple.jpg", 10, 6.99),
-    )*/
-
     Box(
         modifier = modifier
-            .fillMaxSize()
+//            .fillMaxSize()
             .background(
                 brush = Brush.linearGradient(
                     colors = listOf(Color(0xffdddddd), Color(0xffdddddd))
                 )
             ),
     ){
-        Column {
-            storeUiState.trolley.forEach {
-                ShopItemCard(shopItem = it.item, afegirACarro = afegirACarro, quantitat = it.quantity, imgBaseURL = imgBaseURL)
+        LazyColumn (contentPadding = PaddingValues(top = 0.dp)) {
+            items(storeUiState.trolley) { trolleyItem ->
+                ShopItemCard(
+                    shopItem = trolleyItem.item,
+                    afegirACarro = afegirACarro,
+                    treureDelCarro = treureDelCarro,
+                    quantitat = trolleyItem.quantity,
+                    imgBaseURL = imgBaseURL
+                )
             }
         }
     }
@@ -69,6 +74,7 @@ fun ShopScreen(
 fun ShopItemCard(
     shopItem: ShopItem,
     afegirACarro: (ShopItem) -> Unit,
+    treureDelCarro: (ShopItem) -> Unit,
     quantitat: Int,
     modifier: Modifier = Modifier,
     imgBaseURL: String = ""
@@ -79,21 +85,35 @@ fun ShopItemCard(
             .padding(8.dp)
     ) {
         Row(
-            modifier = Modifier
-                .padding(16.dp),
+            modifier = Modifier,
             horizontalArrangement = Arrangement.SpaceBetween // Arrange items with space between
         ) {
             ShopItemPhotoCard(shopItem = shopItem, imgBaseURL = imgBaseURL)
             Spacer(modifier = Modifier.width(16.dp))
-            Column {
-                Text(text = shopItem.nom)
-                Text(text = "Quantity: ${quantitat}")
-                Text(text = "Price: $${shopItem.preu}")
-            }
-            Button(
-                onClick = { afegirACarro(shopItem) }
+            Row (
+                horizontalArrangement = Arrangement.SpaceBetween,
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxWidth()
             ) {
-                Text("Buy")
+                Column {
+                    Text(text = shopItem.nom)
+                    Text(text = "Quantity: ${quantitat}")
+                    Text(text = "Price: $${shopItem.preu}")
+                    Text(text = "Stock: ${shopItem.estoc}")
+                }
+            }
+            Column {
+                Button(
+                    onClick = { afegirACarro(shopItem) }
+                ) {
+                    Text("+")
+                }
+                Button(
+                    onClick = { treureDelCarro(shopItem) }
+                ) {
+                    Text("-")
+                }
             }
         }
     }
@@ -102,16 +122,54 @@ fun ShopItemCard(
 @Composable
 fun ShopItemPhotoCard(shopItem: ShopItem, modifier: Modifier = Modifier, imgBaseURL: String) {
 
-    AsyncImage(
-        model = ImageRequest.Builder(context = LocalContext.current)
-            .data("${imgBaseURL}/${shopItem.imatge}")
-            .build(),
+    val painter = // Enable disk caching
+        rememberAsyncImagePainter(
+            ImageRequest.Builder(LocalContext.current)
+                .data(data = "${imgBaseURL}/${shopItem.imatge}")
+                .apply {
+                    diskCachePolicy(CachePolicy.ENABLED) // Use Coil's CachePolicy
+                    crossfade(true)
+                    placeholder(R.drawable.loading)
+                    error(R.drawable.error)
+                }
+                .build()
+        )
+
+    Image(
+        painter = painter,
         contentDescription = shopItem.nom,
         contentScale = ContentScale.Fit,
-        modifier = modifier,
-        onError = { error ->
-            println("Error loading image: ${error}")
-            println("trying to load: ${shopItem.imatge}")
-        }
+        modifier = modifier
+            .width(125.dp)
     )
+}
+
+//@Preview(showBackground = true)
+//@Composable
+//fun ShopItemCardPreview() {
+//    val exampleData: List<ShopItem> = listOf(
+//        ShopItem(0, "Apple", "https://example.com/apple.jpg", 10, 1.99),
+//        ShopItem(0, "Apple", "https://example.com/apple.jpg", 10, 1.99),
+//        ShopItem(0, "Apple", "https://example.com/apple.jpg", 10, 1.99))
+//
+//    ShopItemCard(
+//        shopItem = exampleData[0],
+//        afegirACarro = {},
+//        treureDelCarro = {},
+//        quantitat = 1
+//    )
+//}
+
+@Preview(showBackground = true)
+@Composable
+fun ShopScreenPreview() {
+    val exampleData: List<ShopItem> = listOf(
+        ShopItem(0, "Apple", "https://example.com/apple.jpg", 10, 1.99),
+        ShopItem(0, "Apple", "https://example.com/apple.jpg", 10, 1.99),
+        ShopItem(0, "Apple", "https://example.com/apple.jpg", 10, 1.99))
+
+    ShopScreen(
+    )
+
+
 }

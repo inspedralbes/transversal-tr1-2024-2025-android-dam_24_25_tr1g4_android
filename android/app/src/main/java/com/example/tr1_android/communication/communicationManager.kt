@@ -1,5 +1,9 @@
 package com.example.tr1_android.communication
 
+import com.example.tr1_android.data.CompraRequest
+import com.example.tr1_android.data.CompraResponse
+import com.example.tr1_android.data.LoginRequest
+import com.example.tr1_android.data.LoginResponse
 import com.example.tr1_android.data.ShopItem
 import com.google.gson.GsonBuilder
 import retrofit2.Retrofit
@@ -21,6 +25,12 @@ interface StoreApiService {
 
     @GET("producteAndroidApp")
     suspend fun getProductes(): List<ShopItem>
+
+    @POST("comanda") // Add this line
+    suspend fun postComanda(@Body comanda: CompraRequest): CompraResponse
+
+    @POST("login")
+    suspend fun login(@Body loginRequest: LoginRequest): LoginResponse
 
 }
 
