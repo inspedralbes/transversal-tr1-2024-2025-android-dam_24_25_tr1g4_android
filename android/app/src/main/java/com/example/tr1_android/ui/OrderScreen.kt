@@ -10,25 +10,34 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import com.example.tr1_android.data.BuyUiState
 
 @Composable
 fun OrderScreen(
     modifier: Modifier = Modifier,
     viewModel: StoreViewModel
 ) {
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Text(
-            text = "Hooray, you paid!",
-            style = MaterialTheme.typography.headlineMedium,
-            modifier = Modifier.padding(bottom = 16.dp)
-        )
+    val buyUiState by viewModel.buyUiState.collectAsState()
 
-        // You can add more content here, like order details, etc.
+    when (buyUiState) {
+        is BuyUiState.Loading -> {
+            Text(text = "Loading")
+        }
+        is BuyUiState.Success -> {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(16.dp),
+            ) {
+
+            }
+        }
+        is BuyUiState.Error -> {
+            Text(text = "Error")
+
+        }
     }
+
 }

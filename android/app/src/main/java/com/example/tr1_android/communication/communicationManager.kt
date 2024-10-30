@@ -1,5 +1,6 @@
 package com.example.tr1_android.communication
 
+import com.example.tr1_android.data.Comanda
 import com.example.tr1_android.data.CompraRequest
 import com.example.tr1_android.data.CompraResponse
 import com.example.tr1_android.data.LoginRequest
@@ -25,6 +26,9 @@ interface StoreApiService {
 
     @GET("producteAndroidApp")
     suspend fun getProductes(): List<ShopItem>
+
+    @GET("comanda")
+    suspend fun getComandes(): List<Comanda>
 
     @POST("comanda") // Add this line
     suspend fun postComanda(@Body comanda: CompraRequest): CompraResponse

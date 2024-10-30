@@ -9,7 +9,9 @@ data class StoreUiState (
     var token: String = "",
     var trolley: List<TrolleyItem> = emptyList(),
     val totalPrice: Double = 0.0,
-    var userInfo: User = User()
+    var userInfo: User = User(),
+    var showDialog: Boolean = false,
+    var comandes: List<Comanda> = emptyList()
 )
 
 @Serializable
@@ -50,6 +52,12 @@ sealed interface UserUiState {
     object Loading : UserUiState
 }
 
+sealed interface BuyUiState {
+    data class Success(val buy: CompraResponse) : BuyUiState
+    object Error : BuyUiState
+    object Loading : BuyUiState
+}
+
 // Login
 
 data class LoginRequest(
@@ -79,13 +87,25 @@ data class CompraRequest(
 @Serializable
 data class CompraResponse(
     var valid: Boolean,
-    var comanda: Comanda
 )
 
 @Serializable
 data class Comanda(
+
+    @SerialName(value = "id")
     var id: Int,
-    var estatus: String,
-    var productes: List<BuyItem>,
-    var total: Double
+
+    @SerialName(value = "iduser")
+    var iduser: Int,
+
+    @SerialName(value = "estatus")
+    var estatus: Int,
+
+//    var productes: List<BuyItem>,
+
+    @SerialName(value = "productes")
+    var productes: String,
+
+    @SerialName(value = "preu_total")
+    var preu_total: Double
 )

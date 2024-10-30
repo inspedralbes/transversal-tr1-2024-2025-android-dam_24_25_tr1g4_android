@@ -2,13 +2,18 @@ package com.example.tr1_android.ui
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.navigation.NavHostController
+import com.example.tr1_android.StoreScreen
 import com.example.tr1_android.communication.StoreApi
 import com.example.tr1_android.data.BuyItem
+import com.example.tr1_android.data.BuyUiState
 import com.example.tr1_android.data.CompraRequest
 import com.example.tr1_android.data.LoginRequest
 import com.example.tr1_android.data.ShopItem
 import com.example.tr1_android.data.StoreUiState
 import com.example.tr1_android.data.TrolleyItem
+import com.example.tr1_android.data.User
+import com.example.tr1_android.data.UserUiState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -22,6 +27,12 @@ class StoreViewModel: ViewModel() {
 
     private val _uiState = MutableStateFlow(StoreUiState())
     val uiState: StateFlow<StoreUiState> = _uiState.asStateFlow()
+
+    private val _userUiState = MutableStateFlow<UserUiState>(UserUiState.Loading)
+    val userUiState: StateFlow<UserUiState> = _userUiState.asStateFlow()
+
+    private val _buyUiState = MutableStateFlow<BuyUiState>(BuyUiState.Loading)
+    val buyUiState: StateFlow<BuyUiState> = _buyUiState.asStateFlow()
 
     fun addItemToTrolley(shopItem: ShopItem) {
         _uiState.update { currentState ->
@@ -88,19 +99,34 @@ class StoreViewModel: ViewModel() {
         }
     }
 
-    fun login(loginRequest: LoginRequest): Boolean {
-        var valid: Boolean = false
+    fun login(loginRequest: LoginRequest, navController: NavHostController): Boolean {
+        var valid = false
         viewModelScope.launch {
-            val response = StoreApi.retrofitService.login(loginRequest)
 
-            println(response)
+            try {
+                val response = StoreApi.retrofitService.login(loginRequest)
 
-            _uiState.update { currentState ->
-                currentState.copy(
-                    userInfo = response.usuari
-                )}
-            valid = response.valid
+                if (response.usuari != null) {
+                    println(response)
+
+                    _uiState.update { currentState ->
+                        currentState.copy(
+                            userInfo = response.usuari
+                        )}
+                }
+                if (response.valid) {
+                    valid = true
+                    navController.navigate(StoreScreen.Shop.name)
+                } else {
+                    valid = false
+                    println()
+                    setShowDialog(value = true)
+                    println("Credentials error")
+                }
+            } catch (e: Exception) {
+                println("error")
             }
+        }
 
         return valid
 
@@ -109,23 +135,29 @@ class StoreViewModel: ViewModel() {
 
     fun postCompra() {
         viewModelScope.launch {
-                val preuTotal = _uiState.value.totalPrice
-                val idUser = _uiState.value.userInfo.id
-                val productes: MutableList<BuyItem> = mutableListOf()
+            val preuTotal = _uiState.value.totalPrice
+            val idUser = _uiState.value.userInfo.id
+            val productes: MutableList<BuyItem> = mutableListOf()
 
-                _uiState.value.trolley.map { trolleyItem ->
-                    if (trolleyItem.quantity > 0)
-                        productes.add(BuyItem(trolleyItem.item.id, trolleyItem.quantity))
-                }
+            _uiState.value.trolley.map { trolleyItem ->
+                if (trolleyItem.quantity > 0)
+                    productes.add(BuyItem(trolleyItem.item.id, trolleyItem.quantity))
+            }
 
-                println(idUser)
-                println(productes)
-                println(preuTotal)
-
-                StoreApi.retrofitService.postComanda(CompraRequest(idUser,productes,preuTotal))
-
+            println(idUser)
+            println(productes)
+            println(preuTotal)
+            val preuTotalRounded = BigDecimal(preuTotal).setScale(2, RoundingMode.HALF_UP).toDouble()
 
 
+            val response = StoreApi.retrofitService.postComanda(CompraRequest(idUser,productes,preuTotalRounded))
+
+            if (response.valid) {
+                _buyUiState.value = BuyUiState.Success(response)
+                clearTrolley()
+            } else {
+                _buyUiState.value = BuyUiState.Error
+            }
 
         }
     }
@@ -140,6 +172,32 @@ class StoreViewModel: ViewModel() {
                 trolley = resetTrolley,
                 totalPrice = 0.0
                         )
+        }
+    }
+
+    fun setShowDialog(value: Boolean) {
+        _uiState.update { currentState ->
+            currentState.copy(
+                showDialog = value
+            )
+        }
+    }
+
+    fun getComandes() {
+        viewModelScope.launch {
+            _userUiState.value = UserUiState.Loading
+            val comandes = StoreApi.retrofitService.getComandes()
+
+            val comandesFiltered = comandes.filter { comanda -> comanda.iduser == _uiState.value.userInfo.id }
+
+            println(comandes)
+
+            _uiState.update { currentState ->
+                currentState.copy(
+                    comandes = comandesFiltered
+                )
+            }
+            _userUiState.value = UserUiState.Success(User())
         }
     }
 

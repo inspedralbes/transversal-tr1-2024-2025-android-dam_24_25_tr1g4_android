@@ -33,6 +33,10 @@ import com.example.tr1_android.ui.OrderScreen
 import com.example.tr1_android.ui.PaymentScreen
 import com.example.tr1_android.ui.theme.TR1_androidTheme
 import kotlinx.coroutines.launch
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import com.example.tr1_android.data.UserUiState
+import com.example.tr1_android.ui.ProfileScreen
 
 enum class StoreScreen {
     Login,
@@ -49,7 +53,8 @@ fun StoreAppBar(
     canNavigateBack: Boolean,
     navigateUp: () -> Unit,
     modifier: Modifier = Modifier,
-    onTolleyClick: () -> Unit = {}
+    onTolleyClick: () -> Unit = {},
+    onProfileClick: () -> Unit = {}
 ) {
     TopAppBar(
         title = { Text(currentScreen.name) },
@@ -69,6 +74,12 @@ fun StoreAppBar(
         },
         actions = { // Add actions section
             if (canNavigateBack) {
+                IconButton(onClick = { onProfileClick() }) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.baseline_person_24), // Replace with your profile icon
+                        contentDescription = "Profile"
+                    )
+                }
                 IconButton(onClick = { onTolleyClick() }) {
                     Icon(
                         painter = painterResource(id = R.drawable.baseline_shopping_cart_24), // Replace with your trolley icon
@@ -91,6 +102,8 @@ fun TR1_androidApp(
     val currentScreen = StoreScreen.valueOf(
         backStackEntry?.destination?.route ?: StoreScreen.Login.name
     )
+    // Get the current UI state
+    val uiState by viewModel.userUiState.collectAsState()
 
     Scaffold(
         modifier = Modifier,
@@ -101,6 +114,10 @@ fun TR1_androidApp(
                 navigateUp = { navController.navigateUp() },
                 onTolleyClick = {
                     navController.navigate(StoreScreen.Payment.name)
+                },
+                onProfileClick = {
+                    navController.navigate(StoreScreen.Profile.name)
+                    viewModel.getComandes()
                 }
                 )
         }
@@ -116,16 +133,7 @@ fun TR1_androidApp(
                     modifier = Modifier
                         .padding(innerPadding),
                     onSendLogin = {
-                        var valid = false
-                        viewModel.viewModelScope.launch {
-                            valid = viewModel.login(it)
-                            if (valid) {
-                                navController.navigate(StoreScreen.Shop.name)
-                                println("acceptat")
-                            }
-                        }
-
-
+                        viewModel.login(it, navController)
                     }
                 )
             }
@@ -139,6 +147,13 @@ fun TR1_androidApp(
                         viewModel.removeItemFromTrolley(it)
                     },
                     storeViewModel = viewModel
+                )
+            }
+            composable(route = StoreScreen.Profile.name) {
+                ProfileScreen(
+                    modifier = Modifier
+                        .padding(innerPadding),
+                    viewModel = viewModel
                 )
             }
             composable(route = StoreScreen.Payment.name) {
@@ -174,6 +189,8 @@ fun TR1_androidApp(
         }
     }
 }
+
+
 
 @Preview
 @Composable
