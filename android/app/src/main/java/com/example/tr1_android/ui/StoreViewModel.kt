@@ -9,6 +9,7 @@ import com.example.tr1_android.data.BuyItem
 import com.example.tr1_android.data.BuyUiState
 import com.example.tr1_android.data.CompraRequest
 import com.example.tr1_android.data.LoginRequest
+import com.example.tr1_android.data.RegisterRequest
 import com.example.tr1_android.data.ShopItem
 import com.example.tr1_android.data.StoreUiState
 import com.example.tr1_android.data.TrolleyItem
@@ -119,17 +120,34 @@ class StoreViewModel: ViewModel() {
                     navController.navigate(StoreScreen.Shop.name)
                 } else {
                     valid = false
-                    println()
                     setShowDialog(value = true)
                     println("Credentials error")
                 }
             } catch (e: Exception) {
-                println("error")
+                println("error: ${e.message}")
             }
         }
 
         return valid
 
+    }
+
+    fun register(registerRequest: RegisterRequest, navController: NavHostController) {
+        println("registrant")
+        viewModelScope.launch {
+            val response = StoreApi.retrofitService.register(registerRequest)
+            println(response)
+            if (response.valid) {
+                _uiState.update { currentState ->
+                    currentState.copy(
+                        userInfo = response.usuari
+                    )}
+                navController.navigate(StoreScreen.Shop.name)
+            } else {
+                setShowDialog(value = true)
+                println("Credentials error")
+            }
+        }
     }
 
 
@@ -187,6 +205,8 @@ class StoreViewModel: ViewModel() {
         viewModelScope.launch {
             _userUiState.value = UserUiState.Loading
             val comandes = StoreApi.retrofitService.getComandes()
+
+            println(_uiState.value.userInfo.id)
 
             val comandesFiltered = comandes.filter { comanda -> comanda.iduser == _uiState.value.userInfo.id }
 

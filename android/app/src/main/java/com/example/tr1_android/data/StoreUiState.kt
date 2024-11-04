@@ -40,7 +40,7 @@ data class TrolleyItem(
 
 @Serializable
 data class User(
-    var id: Int = 1,
+    var id: Int = 0,
     var nom: String = "",
     var email: String = "",
     var token: String = "",
@@ -69,6 +69,16 @@ data class LoginRequest(
 data class LoginResponse(
     var valid: Boolean,
     var usuari: User
+)
+
+// Register
+
+data class RegisterRequest(
+    var name: String,
+    var correo: String,
+    var password: String,
+    var pagament: String
+
 )
 
 // Compra

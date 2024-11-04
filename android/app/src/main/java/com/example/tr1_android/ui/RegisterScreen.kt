@@ -1,5 +1,6 @@
 package com.example.tr1_android.ui
 
+import com.example.tr1_android.data.RegisterRequest
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -27,20 +28,25 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.tr1_android.R
 import com.example.tr1_android.data.LoginRequest
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.tr1_android.ui.theme.TR1_androidTheme
 
 @Composable
-fun LoginScreen(
+fun RegisterScreen(
     modifier: Modifier = Modifier,
-    onSendLogin: (LoginRequest) -> Unit = {},
-    onGoToRegister: () -> Unit = {},
+    onCreateAccount: (RegisterRequest) -> Unit = {},
+    onGoToLogin: () -> Unit = {},
     storeViewModel: StoreViewModel = viewModel()
 ) {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
+    var name by remember { mutableStateOf("") }
+    var pagament by remember { mutableStateOf("") }
+    var confirmPassword by remember { mutableStateOf("") }
 
     val storeUiState by storeViewModel.uiState.collectAsState()
 
@@ -60,11 +66,19 @@ fun LoginScreen(
         Image(
             painter = painterResource(id = R.drawable.app_logo), // Replace with your logo
             contentDescription = "App Logo",
-            modifier = Modifier.size(300.dp) // Adjust size as needed
+            modifier = Modifier.size(200.dp) // Adjust size as needed
         )
-        Spacer(Modifier.height(32.dp))
+        Spacer(Modifier.height(16.dp))
 
-        // Email Input
+        // Name Input
+        OutlinedTextField(
+            value = name,
+            onValueChange = { name = it },
+            label = { Text("Nom") },
+            modifier = Modifier.fillMaxWidth()
+        )
+        Spacer(Modifier.height(16.dp))
+
         OutlinedTextField(
             value = email,
             onValueChange = { email = it },
@@ -81,16 +95,41 @@ fun LoginScreen(
             visualTransformation = PasswordVisualTransformation(), // Hide password
             modifier = Modifier.fillMaxWidth()
         )
+        Spacer(Modifier.height(16.dp))
+
+        // confirmPassword Input
+        OutlinedTextField(
+            value = confirmPassword,
+            onValueChange = { confirmPassword = it },
+            label = { Text("Confirmar contrasenya") },
+            visualTransformation = PasswordVisualTransformation(), // Hide password
+            modifier = Modifier.fillMaxWidth()
+        )
+        Spacer(Modifier.height(16.dp))
+
+        // Payment Input
+        OutlinedTextField(
+            value = pagament,
+            onValueChange = { pagament = it },
+            label = { Text("Mètode de pagament") },
+            modifier = Modifier.fillMaxWidth()
+        )
         Spacer(Modifier.height(32.dp))
 
         // Login Button
-        Button(onClick = { onSendLogin(LoginRequest(email, password)) }) {
-            Text("Login")
+        Button(onClick = {
+            if (password == confirmPassword) {
+                onCreateAccount(RegisterRequest(correo = email, name = name, password = password, pagament = pagament))
+            }
+        }) {
+            Text("Registrar-se")
         }
         Button(onClick = {
-            onGoToRegister()
+            if (password == confirmPassword) {
+                onGoToLogin()
+            }
         }) {
-            Text("No tens compte?")
+            Text("Ja tens compte?")
         }
     }
 
@@ -101,19 +140,36 @@ private fun WrongLoginDialog(
     modifier: Modifier = Modifier,
     storeViewModel: StoreViewModel = viewModel()
 ) {
-        AlertDialog(
-            onDismissRequest = {
-                storeViewModel.setShowDialog(value = false)
-            },
-            title = {
-                Text(text = "Coreu o contrasenya incorrectes") },
-            titleContentColor = Color.Black,
-            modifier = modifier,
-            confirmButton = {
-                TextButton(onClick = { storeViewModel.setShowDialog(value = false) }) {
-                    Text(text = stringResource(R.string.tancar))
-                }
-            }
-        )
+    AlertDialog(
+        onDismissRequest = {
+            storeViewModel.setShowDialog(value = false)
+        },
+        title = {
+            Text(text = "El correu ja està asignat") },
+        titleContentColor = Color.Black,
+        modifier = modifier,
 
+        confirmButton = {
+            TextButton(onClick = { storeViewModel.setShowDialog(value = false) }) {
+                Text(text = "Tancar")
+            }
+        }
+    )
+
+}
+
+@Preview(showBackground = true)
+@Composable
+fun GreetingPreview() {
+    TR1_androidTheme {
+        RegisterScreen()
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun DialogPreview() {
+    TR1_androidTheme {
+        WrongLoginDialog()
+    }
 }

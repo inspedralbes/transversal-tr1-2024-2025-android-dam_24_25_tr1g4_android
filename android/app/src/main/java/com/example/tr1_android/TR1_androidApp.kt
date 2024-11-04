@@ -37,9 +37,11 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import com.example.tr1_android.data.UserUiState
 import com.example.tr1_android.ui.ProfileScreen
+import com.example.tr1_android.ui.RegisterScreen
 
 enum class StoreScreen {
     Login,
+    Register,
     Shop,
     Payment,
     Profile,
@@ -73,7 +75,7 @@ fun StoreAppBar(
             }
         },
         actions = { // Add actions section
-            if (canNavigateBack) {
+            if (currentScreen.name != StoreScreen.Login.name && currentScreen.name != StoreScreen.Register.name) {
                 IconButton(onClick = { onProfileClick() }) {
                     Icon(
                         painter = painterResource(id = R.drawable.baseline_person_24), // Replace with your profile icon
@@ -134,9 +136,27 @@ fun TR1_androidApp(
                         .padding(innerPadding),
                     onSendLogin = {
                         viewModel.login(it, navController)
-                    }
+                    },
+                    onGoToRegister = {
+                        navController.navigate(StoreScreen.Register.name)
+                    },
+                    storeViewModel = viewModel
                 )
             }
+            composable(route = StoreScreen.Register.name) {
+                RegisterScreen(
+                    modifier = Modifier
+                        .padding(innerPadding),
+                    onCreateAccount = {
+                        viewModel.register(it, navController)
+                    },
+                    onGoToLogin = {
+                        navController.navigate(StoreScreen.Login.name)
+                    },
+                    storeViewModel = viewModel
+                )
+            }
+
             composable(route = StoreScreen.Shop.name) {
                 ShopScreen(
                     modifier = Modifier,
