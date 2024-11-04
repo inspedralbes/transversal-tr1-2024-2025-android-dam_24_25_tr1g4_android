@@ -7,6 +7,7 @@ import com.example.tr1_android.StoreScreen
 import com.example.tr1_android.communication.StoreApi
 import com.example.tr1_android.data.BuyItem
 import com.example.tr1_android.data.BuyUiState
+import com.example.tr1_android.data.Comanda
 import com.example.tr1_android.data.CompraRequest
 import com.example.tr1_android.data.LoginRequest
 import com.example.tr1_android.data.RegisterRequest
@@ -172,6 +173,10 @@ class StoreViewModel: ViewModel() {
 
             if (response.valid) {
                 _buyUiState.value = BuyUiState.Success(response)
+                _uiState.update { currentState ->
+                    currentState.copy(
+                        comandaActual = Comanda(0,idUser,0, productes, preuTotalRounded)
+                    )}
                 clearTrolley()
             } else {
                 _buyUiState.value = BuyUiState.Error
