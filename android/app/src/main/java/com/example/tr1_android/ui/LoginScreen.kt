@@ -44,7 +44,6 @@ fun LoginScreen(
 
     val storeUiState by storeViewModel.uiState.collectAsState()
 
-    /* TODO */ // No funciona el dialogo de error
     if (storeUiState.showDialog) {
         WrongLoginDialog(modifier, storeViewModel)
     }

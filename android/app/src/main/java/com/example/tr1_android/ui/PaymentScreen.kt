@@ -39,12 +39,12 @@ fun PaymentScreen(
             }
         }
 
-        Text(text = "Total: $${shopUiState.totalPrice}",
+        Text(text = "Preu total: ${shopUiState.totalPrice}€",
             style = MaterialTheme.typography.headlineMedium,
             modifier = Modifier.padding(bottom = 16.dp))
 
         Button(onClick = { onPaymentSuccess() }) {
-            Text("Pay Now")
+            Text("Confirmar compra")
         }
     }
 }
@@ -58,6 +58,6 @@ fun ShopItemRow(
         .fillMaxWidth()
         .padding(8.dp)) {
         Text(text = shopItem.nom, modifier = Modifier.weight(1f))
-        Text(text = "${quantity} x $${shopItem.preu}")
+        Text(text = "${quantity} x ${shopItem.preu}€")
     }
 }

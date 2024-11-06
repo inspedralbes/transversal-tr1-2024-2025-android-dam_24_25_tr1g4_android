@@ -98,9 +98,9 @@ fun ShopItemCard(
             ) {
                 Column {
                     Text(text = shopItem.nom)
-                    Text(text = "Quantity: ${quantitat}")
-                    Text(text = "Price: $${shopItem.preu}")
-                    Text(text = "Stock: ${shopItem.estoc}")
+                    Text(text = "Quantitat: ${quantitat}")
+                    Text(text = "Preu: ${shopItem.preu}€")
+                    Text(text = "Estoc: ${shopItem.estoc}")
                 }
             }
             Column {
@@ -144,29 +144,9 @@ fun ShopItemPhotoCard(shopItem: ShopItem, modifier: Modifier = Modifier, imgBase
     )
 }
 
-//@Preview(showBackground = true)
-//@Composable
-//fun ShopItemCardPreview() {
-//    val exampleData: List<ShopItem> = listOf(
-//        ShopItem(0, "Apple", "https://example.com/apple.jpg", 10, 1.99),
-//        ShopItem(0, "Apple", "https://example.com/apple.jpg", 10, 1.99),
-//        ShopItem(0, "Apple", "https://example.com/apple.jpg", 10, 1.99))
-//
-//    ShopItemCard(
-//        shopItem = exampleData[0],
-//        afegirACarro = {},
-//        treureDelCarro = {},
-//        quantitat = 1
-//    )
-//}
-
 @Preview(showBackground = true)
 @Composable
 fun ShopScreenPreview() {
-    val exampleData: List<ShopItem> = listOf(
-        ShopItem(0, "Apple", "https://example.com/apple.jpg", 10, 1.99),
-        ShopItem(0, "Apple", "https://example.com/apple.jpg", 10, 1.99),
-        ShopItem(0, "Apple", "https://example.com/apple.jpg", 10, 1.99))
 
     ShopScreen(
     )

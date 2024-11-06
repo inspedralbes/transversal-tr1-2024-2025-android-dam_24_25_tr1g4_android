@@ -12,7 +12,7 @@ data class StoreUiState (
     var userInfo: User = User(),
     var showDialog: Boolean = false,
     var comandes: List<Comanda> = emptyList(),
-    var comandaActual: Comanda = Comanda(0,0,0, emptyList(), 0.0)
+    var comandaActual: Comanda = Comanda(0,0,1, emptyList(), 0.0)
 )
 
 @Serializable
@@ -101,6 +101,25 @@ data class CompraResponse(
 )
 
 @Serializable
+data class ComandaWithString(
+
+    @SerialName(value = "id")
+    var id: Int,
+
+    @SerialName(value = "iduser")
+    var iduser: Int,
+
+    @SerialName(value = "estat")
+    var estat: Int,
+
+    @SerialName(value = "productes")
+    var productes: String,
+
+    @SerialName(value = "preu_total")
+    var preu_total: Double
+)
+
+@Serializable
 data class Comanda(
 
     @SerialName(value = "id")
@@ -109,13 +128,12 @@ data class Comanda(
     @SerialName(value = "iduser")
     var iduser: Int,
 
-    @SerialName(value = "estatus")
-    var estatus: Int,
+    @SerialName(value = "estat")
+    var estat: Int,
 
     @SerialName(value = "productes")
     var productes: List<BuyItem>,
 
-//    var productes: String,
 
     @SerialName(value = "preu_total")
     var preu_total: Double

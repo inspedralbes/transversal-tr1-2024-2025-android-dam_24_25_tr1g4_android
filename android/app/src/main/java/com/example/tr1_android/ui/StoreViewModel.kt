@@ -1,14 +1,18 @@
 package com.example.tr1_android.ui
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavHostController
 import com.example.tr1_android.StoreScreen
+import com.example.tr1_android.communication.DEV_URL
 import com.example.tr1_android.communication.StoreApi
 import com.example.tr1_android.data.BuyItem
 import com.example.tr1_android.data.BuyUiState
 import com.example.tr1_android.data.Comanda
+import com.example.tr1_android.data.ComandaWithString
 import com.example.tr1_android.data.CompraRequest
+import com.example.tr1_android.data.CompraResponse
 import com.example.tr1_android.data.LoginRequest
 import com.example.tr1_android.data.RegisterRequest
 import com.example.tr1_android.data.ShopItem
@@ -16,6 +20,7 @@ import com.example.tr1_android.data.StoreUiState
 import com.example.tr1_android.data.TrolleyItem
 import com.example.tr1_android.data.User
 import com.example.tr1_android.data.UserUiState
+import com.google.gson.Gson
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -23,7 +28,9 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.math.BigDecimal
 import java.math.RoundingMode
-import kotlin.text.toDouble
+import io.socket.client.IO
+import io.socket.client.Socket
+import io.socket.emitter.Emitter
 
 class StoreViewModel: ViewModel() {
 
@@ -35,6 +42,10 @@ class StoreViewModel: ViewModel() {
 
     private val _buyUiState = MutableStateFlow<BuyUiState>(BuyUiState.Loading)
     val buyUiState: StateFlow<BuyUiState> = _buyUiState.asStateFlow()
+
+    val gson = Gson()
+
+    lateinit var mSocket: Socket
 
     fun addItemToTrolley(shopItem: ShopItem) {
         _uiState.update { currentState ->
@@ -118,7 +129,7 @@ class StoreViewModel: ViewModel() {
                 }
                 if (response.valid) {
                     valid = true
-                    navController.navigate(StoreScreen.Shop.name)
+                    navController.navigate(StoreScreen.Tenda.name)
                 } else {
                     valid = false
                     setShowDialog(value = true)
@@ -143,7 +154,7 @@ class StoreViewModel: ViewModel() {
                     currentState.copy(
                         userInfo = response.usuari
                     )}
-                navController.navigate(StoreScreen.Shop.name)
+                navController.navigate(StoreScreen.Tenda.name)
             } else {
                 setShowDialog(value = true)
                 println("Credentials error")
@@ -208,26 +219,107 @@ class StoreViewModel: ViewModel() {
 
     fun getComandes() {
         viewModelScope.launch {
+            println("getting comandes")
             _userUiState.value = UserUiState.Loading
             val comandes = StoreApi.retrofitService.getComandes()
 
-            println(_uiState.value.userInfo.id)
+            println("comandes rebudes")
 
             val comandesFiltered = comandes.filter { comanda -> comanda.iduser == _uiState.value.userInfo.id }
 
-            println(comandes)
+            parseAndSaveComandes(comandesFiltered)
+
+            println("comandes guardades")
+
+            /*var comandesTransformed: MutableList<Comanda> = mutableListOf()
+            comandesFiltered.forEach { comanda ->
+                println(comanda.productes)
+                val productesList: List<BuyItem> = gson.fromJson(comanda.productes, Array<BuyItem>::class.java).toList()
+
+                comandesTransformed.add(Comanda(comanda.id, comanda.iduser, comanda.estatus, productesList, comanda.preu_total))
+
+            }
+
+            println(comandesTransformed)
+
 
             _uiState.update { currentState ->
                 currentState.copy(
-                    comandes = comandesFiltered
+                    comandes = comandesTransformed
                 )
-            }
+            }*/
             _userUiState.value = UserUiState.Success(User())
         }
     }
 
+    fun setComandaActual(comanda: Comanda) {
+        _buyUiState.value = BuyUiState.Loading
+        _uiState.update { currentState ->
+            currentState.copy(
+                comandaActual = comanda
+            )
+        }
+        _buyUiState.value = BuyUiState.Success(CompraResponse(true))
+    }
 
-    init {
+    private val actualitzarComandes = Emitter.Listener { args ->
+        val comandesJson = args[0] as String
+
+        println("comandes rebudes: ${comandesJson}")
+
+
+//        val comandes: List<ComandaWithString> = comandesJson.filterIsInstance<ComandaWithString>().toList()
+//        val comandes: List<ComandaWithString> = comandesJson.mapNotNull {
+//            if (it is ComandaWithString) it else null
+//        }
+//        val comandesJson: String = args[0] as String
+
+        val comandes = Gson().fromJson(comandesJson, Array<ComandaWithString>::class.java)
+
+        println("comandes tractades: ${comandes}")
+
+        val comandesFiltered = comandes.filter { comanda -> comanda.iduser == _uiState.value.userInfo.id }
+
+        val comandesCorrectes = parseAndSaveComandes(comandesFiltered)
+
+        resetComandaActual(comandesCorrectes)
+
+    }
+
+    private fun resetComandaActual(comandes: List<Comanda>) {
+        val comandaActualitzada = comandes.find { comanda -> comanda.id == _uiState.value.comandaActual.id }
+
+        if (comandaActualitzada != null) {
+            setComandaActual(comandaActualitzada)
+        }
+    }
+
+    private fun parseAndSaveComandes(comandes: List<ComandaWithString>): List<Comanda> {
+
+        println("comandes filtrades: ${comandes}")
+
+        var comandesTransformed: MutableList<Comanda> = mutableListOf()
+        comandes.forEach { comanda ->
+            println(comanda.productes)
+            val productesList: List<BuyItem> = gson.fromJson(comanda.productes, Array<BuyItem>::class.java).toList()
+
+            comandesTransformed.add(Comanda(comanda.id, comanda.iduser, comanda.estat, productesList, comanda.preu_total))
+
+        }
+
+        println(comandesTransformed)
+
+
+        _uiState.update { currentState ->
+            currentState.copy(
+                comandes = comandesTransformed
+            )
+        }
+
+        return comandesTransformed
+    }
+
+        init {
 
         viewModelScope.launch {
             println("calling api")
@@ -252,6 +344,23 @@ class StoreViewModel: ViewModel() {
                 trolley = trolleyItems,
                 isLoading = false,
             )}
+
+            // Socket init
+
+            try {
+                mSocket = IO.socket(DEV_URL)
+            } catch (e: Exception) {
+                e.printStackTrace()
+                Log.e("SocketIO", "Failed to connect to socket", e)
+            }
+            mSocket.connect()
+            mSocket.on(Socket.EVENT_CONNECT) {
+                Log.d("SocketIO", "Connected to socket: ${mSocket.id()}")
+                mSocket.on("actualizarArrayComandes", actualitzarComandes)
+            }
+            mSocket.on(Socket.EVENT_DISCONNECT) {
+                Log.d("SocketIO", "Disconnected from socket")
+            }
         }
 
     }

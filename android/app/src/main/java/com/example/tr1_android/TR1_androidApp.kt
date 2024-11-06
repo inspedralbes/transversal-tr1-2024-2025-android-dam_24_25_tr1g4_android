@@ -1,10 +1,8 @@
 package com.example.tr1_android
 
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -19,7 +17,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -32,20 +29,17 @@ import com.example.tr1_android.ui.LoginScreen
 import com.example.tr1_android.ui.OrderScreen
 import com.example.tr1_android.ui.PaymentScreen
 import com.example.tr1_android.ui.theme.TR1_androidTheme
-import kotlinx.coroutines.launch
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import com.example.tr1_android.data.UserUiState
 import com.example.tr1_android.ui.ProfileScreen
 import com.example.tr1_android.ui.RegisterScreen
 
 enum class StoreScreen {
     Login,
     Register,
-    Shop,
-    Payment,
-    Profile,
-    Order
+    Tenda,
+    Pagament,
+    Perfil,
+    Comanda
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -115,10 +109,10 @@ fun TR1_androidApp(
                 canNavigateBack = navController.previousBackStackEntry != null,
                 navigateUp = { navController.navigateUp() },
                 onTolleyClick = {
-                    navController.navigate(StoreScreen.Payment.name)
+                    navController.navigate(StoreScreen.Pagament.name)
                 },
                 onProfileClick = {
-                    navController.navigate(StoreScreen.Profile.name)
+                    navController.navigate(StoreScreen.Perfil.name)
                     viewModel.getComandes()
                 }
                 )
@@ -157,7 +151,7 @@ fun TR1_androidApp(
                 )
             }
 
-            composable(route = StoreScreen.Shop.name) {
+            composable(route = StoreScreen.Tenda.name) {
                 ShopScreen(
                     modifier = Modifier,
                     afegirACarro = {
@@ -169,14 +163,18 @@ fun TR1_androidApp(
                     storeViewModel = viewModel
                 )
             }
-            composable(route = StoreScreen.Profile.name) {
+            composable(route = StoreScreen.Perfil.name) {
                 ProfileScreen(
                     modifier = Modifier
                         .padding(innerPadding),
-                    viewModel = viewModel
+                    viewModel = viewModel,
+                    orderDetails = {
+                        viewModel.setComandaActual(it)
+                        navController.navigate(StoreScreen.Comanda.name)
+                    }
                 )
             }
-            composable(route = StoreScreen.Payment.name) {
+            composable(route = StoreScreen.Pagament.name) {
                 PaymentScreen(
                     modifier = Modifier
                         .padding(innerPadding),
@@ -189,17 +187,17 @@ fun TR1_androidApp(
                             }
                         }
                         if (!anyBought) {
-                            navController.navigate(StoreScreen.Shop.name)
+                            navController.navigate(StoreScreen.Tenda.name)
                         } else {
                             viewModel.postCompra()
                             viewModel.clearTrolley()
-                            navController.navigate(StoreScreen.Order.name)
+                            navController.navigate(StoreScreen.Comanda.name)
                         }
 
                     }
                 )
             }
-            composable(route = StoreScreen.Order.name) {
+            composable(route = StoreScreen.Comanda.name) {
                 OrderScreen(
                     modifier = Modifier
                         .padding(innerPadding),

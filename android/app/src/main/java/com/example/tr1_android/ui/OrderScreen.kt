@@ -1,6 +1,5 @@
 package com.example.tr1_android.ui
 
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -10,16 +9,15 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Card
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import com.example.tr1_android.data.BuyItem
 import com.example.tr1_android.data.BuyUiState
+import com.example.tr1_android.data.ShopItem
 
 @Composable
 fun OrderScreen(
@@ -39,19 +37,18 @@ fun OrderScreen(
                     .fillMaxSize()
                     .padding(16.dp),
             ) {
-                Text("Comanda Details")
+                Text("Detalls de la comanda")
                 Spacer(modifier = Modifier.height(16.dp))
 
                 // Display Comanda properties
-                Text("ID: ${uiState.comandaActual.id}")
-                Text("User ID: ${uiState.comandaActual.iduser}")
-                Text("Status: ${uiState.comandaActual.estatus}")
-                Text("Total Price: ${uiState.comandaActual.preu_total}")
+                Text("Codi de comanda: ${uiState.comandaActual.id}")
+                Text("Estat de la comanda: ${uiState.comandaActual.estat}")
+                Text("Preu Total: ${uiState.comandaActual.preu_total}€")
 
                 Spacer(modifier = Modifier.height(16.dp))
 
                 // Display Productes (BuyItems)
-                Text("Products:")
+                Text("Productes:")
                 LazyColumn {
                     items(uiState.comandaActual.productes) { buyItem ->
                         BuyItemCard(buyItem, viewModel)
@@ -72,15 +69,17 @@ fun BuyItemCard(buyItem: BuyItem, viewModel: StoreViewModel) {
 
     val uiState by viewModel.uiState.collectAsState()
 
+    val thisShopItem: ShopItem = uiState.shopItems.find { it.id == buyItem.idProducte }!!
+
     // Assuming BuyItem has properties like name, quantity, price, etc.
     Card(modifier = Modifier
         .fillMaxWidth()
         .padding(8.dp)
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
-            Text(text = uiState.shopItems[buyItem.idProducte].nom)
-            Text(text = "Quantity: ${buyItem.quantitat}")
-            Text(text = "Price: ${uiState.shopItems[buyItem.idProducte].preu}")
+            Text(text = thisShopItem.nom)
+            Text(text = "Quantitat: ${buyItem.quantitat}")
+            Text(text = "Preu: ${thisShopItem.preu}€")
             // Add more BuyItem properties as needed
         }
     }
