@@ -59,6 +59,12 @@ sealed interface BuyUiState {
     object Loading : BuyUiState
 }
 
+sealed interface ItemsUiState {
+    data class Success(val items: List<ShopItem>) : ItemsUiState
+    object Error : ItemsUiState
+    object Loading : ItemsUiState
+}
+
 // Login
 
 data class LoginRequest(

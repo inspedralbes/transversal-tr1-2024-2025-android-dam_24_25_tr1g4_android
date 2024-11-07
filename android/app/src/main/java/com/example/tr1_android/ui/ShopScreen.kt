@@ -37,6 +37,7 @@ import com.example.tr1_android.communication.DEV_URL
 import com.example.tr1_android.data.ShopItem
 import coil.request.CachePolicy
 import com.example.tr1_android.R
+import com.example.tr1_android.data.ItemsUiState
 
 @Composable
 fun ShopScreen(
@@ -46,27 +47,39 @@ fun ShopScreen(
     treureDelCarro: (ShopItem) -> Unit = {},
 ) {
     val storeUiState by storeViewModel.uiState.collectAsState()
+    val itemsUiState by storeViewModel.itemsUiState.collectAsState()
     var imgBaseURL = "${DEV_URL}/assets"
     Box(
         modifier = modifier
-//            .fillMaxSize()
+            .fillMaxSize()
             .background(
                 brush = Brush.linearGradient(
                     colors = listOf(Color(0xffdddddd), Color(0xffdddddd))
                 )
             ),
     ){
-        LazyColumn (contentPadding = PaddingValues(top = 0.dp)) {
-            items(storeUiState.trolley) { trolleyItem ->
-                ShopItemCard(
-                    shopItem = trolleyItem.item,
-                    afegirACarro = afegirACarro,
-                    treureDelCarro = treureDelCarro,
-                    quantitat = trolleyItem.quantity,
-                    imgBaseURL = imgBaseURL
-                )
+        when(itemsUiState) {
+            is ItemsUiState.Loading -> {
+                Text(text = "Carregant...")
+            }
+            is ItemsUiState.Success -> {
+                LazyColumn (contentPadding = PaddingValues(top = 0.dp)) {
+                    items(storeUiState.trolley) { trolleyItem ->
+                        ShopItemCard(
+                            shopItem = trolleyItem.item,
+                            afegirACarro = afegirACarro,
+                            treureDelCarro = treureDelCarro,
+                            quantitat = trolleyItem.quantity,
+                            imgBaseURL = imgBaseURL
+                        )
+                    }
+                }
+            }
+            is ItemsUiState.Error -> {
+                Text(text = "Error")
             }
         }
+
     }
 }
 

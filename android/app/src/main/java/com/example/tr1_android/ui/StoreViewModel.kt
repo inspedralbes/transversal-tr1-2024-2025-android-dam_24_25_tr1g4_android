@@ -20,6 +20,7 @@ import com.example.tr1_android.data.StoreUiState
 import com.example.tr1_android.data.TrolleyItem
 import com.example.tr1_android.data.User
 import com.example.tr1_android.data.UserUiState
+import com.example.tr1_android.data.ItemsUiState
 import com.google.gson.Gson
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -42,6 +43,9 @@ class StoreViewModel: ViewModel() {
 
     private val _buyUiState = MutableStateFlow<BuyUiState>(BuyUiState.Loading)
     val buyUiState: StateFlow<BuyUiState> = _buyUiState.asStateFlow()
+
+    private val _itemsUiState = MutableStateFlow<ItemsUiState>(ItemsUiState.Loading)
+    val itemsUiState: StateFlow<ItemsUiState> = _itemsUiState.asStateFlow()
 
     val gson = Gson()
 
@@ -319,9 +323,9 @@ class StoreViewModel: ViewModel() {
         return comandesTransformed
     }
 
-        init {
-
+    fun getShopItems() {
         viewModelScope.launch {
+            _itemsUiState.value = ItemsUiState.Loading
             println("calling api")
             _uiState.update { currentState ->
                 currentState.copy(
@@ -329,21 +333,34 @@ class StoreViewModel: ViewModel() {
                 )
             }
 
-            val shopItems = StoreApi.retrofitService.getProductes()
+            try {
+                val shopItems = StoreApi.retrofitService.getProductes()
 
-            val trolleyItems = shopItems.map { shopItem ->
-                TrolleyItem(shopItem, 0)
+                val trolleyItems = shopItems.map { shopItem ->
+                    TrolleyItem(shopItem, 0)
+                }
+
+                _uiState.update { currentState ->
+                    currentState.copy(
+                        shopItems = shopItems,
+                        trolley = trolleyItems,
+                        isLoading = false,
+                    )}
+
+                _itemsUiState.value = ItemsUiState.Success(shopItems)
+
+            } catch (e: Exception) {
+                println("error: ${e.message}")
+                _itemsUiState.value = ItemsUiState.Error
             }
+        }
+    }
 
-            println(shopItems)
+        init {
 
+        viewModelScope.launch {
 
-            _uiState.update { currentState ->
-            currentState.copy(
-                shopItems = shopItems,
-                trolley = trolleyItems,
-                isLoading = false,
-            )}
+            getShopItems()
 
             // Socket init
 
