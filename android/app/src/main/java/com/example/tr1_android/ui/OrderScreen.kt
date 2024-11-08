@@ -32,6 +32,8 @@ fun OrderScreen(
             Text(text = "Loading")
         }
         is BuyUiState.Success -> {
+            val comanda = uiState.comandaActual
+            val estat = if (comanda.estat==0) "Rebuda" else if (comanda.estat==1) "En preparació" else if (comanda.estat==2) "Preparada" else "Recollida"
             Column(
                 modifier = Modifier
                     .fillMaxSize()
@@ -41,8 +43,10 @@ fun OrderScreen(
                 Spacer(modifier = Modifier.height(16.dp))
 
                 // Display Comanda properties
-                Text("Codi de comanda: ${uiState.comandaActual.id}")
-                Text("Estat de la comanda: ${uiState.comandaActual.estat}")
+                if (uiState.comandaActual.id != 0) {
+                    Text("Codi de comanda: ${uiState.comandaActual.id}")
+                }
+                Text("Estat de la comanda: ${estat}")
                 Text("Preu Total: ${uiState.comandaActual.preu_total}€")
 
                 Spacer(modifier = Modifier.height(16.dp))

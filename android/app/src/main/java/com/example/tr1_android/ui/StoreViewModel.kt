@@ -344,7 +344,6 @@ class StoreViewModel: ViewModel() {
                     currentState.copy(
                         shopItems = shopItems,
                         trolley = trolleyItems,
-                        isLoading = false,
                     )}
 
                 _itemsUiState.value = ItemsUiState.Success(shopItems)
