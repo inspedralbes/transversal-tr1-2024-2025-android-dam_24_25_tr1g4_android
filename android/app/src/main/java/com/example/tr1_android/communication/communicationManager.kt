@@ -15,8 +15,8 @@ import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.POST
 
-const val DEV_URL = "http://10.0.2.2:3001"
-//const val DEV_URL = "http://dam.inspedralbes.cat:24590"
+//const val DEV_URL = "http://10.0.2.2:3001"
+const val DEV_URL = "http://dam.inspedralbes.cat:24590"
 
 
 private val retrofit = Retrofit.Builder()
