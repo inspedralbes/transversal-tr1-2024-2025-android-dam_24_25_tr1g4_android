@@ -166,7 +166,7 @@ fun BuyItemText(buyItem: BuyItem, viewModel: StoreViewModel) {
         modifier = Modifier,
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
-        Text(text = "${thisShopItem.nom} - ${buyItem.quantitat}")
+        Text(text = "- ${thisShopItem.nom} - (${buyItem.quantitat})")
     }
 
 }
